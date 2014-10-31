@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 )
 
 var funcs []func() bool
@@ -22,6 +23,28 @@ func Int(name string, value int) *int {
 	funcs = append(funcs, func() bool {
 		if s := os.Getenv(name); s != "" {
 			v, err := strconv.Atoi(s)
+			if err != nil {
+				log.Println(name, err)
+				return false
+			}
+			*p = v
+		}
+		return true
+	})
+	return p
+}
+
+// Duration returns a new time.Duration pointer.
+// When env.Parse is called,
+// env var name will be parsed
+// and the resulting value
+// will be assigned to the location pointed to.
+func Duration(name string, value time.Duration) *time.Duration {
+	p := new(time.Duration)
+	*p = value
+	funcs = append(funcs, func() bool {
+		if s := os.Getenv(name); s != "" {
+			v, err := time.ParseDuration(s)
 			if err != nil {
 				log.Println(name, err)
 				return false
