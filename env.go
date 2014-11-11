@@ -75,6 +75,9 @@ func String(name string, value string) *string {
 // Parse parses known env vars
 // and assigns the values to the variables
 // that were previously registered.
+// If any values cannot be parsed,
+// Parse prints an error message for each one
+// and exits the process with status 1.
 func Parse() {
 	ok := true
 	for _, f := range funcs {
