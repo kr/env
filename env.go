@@ -13,10 +13,10 @@ import (
 var funcs []func() bool
 
 // Int returns a new int pointer.
-// When env.Parse is called,
+// When Parse is called,
 // env var name will be parsed
 // and the resulting value
-// will be assigned to the location pointed to.
+// will be assigned to the returned location.
 func Int(name string, value int) *int {
 	p := new(int)
 	*p = value
@@ -35,10 +35,10 @@ func Int(name string, value int) *int {
 }
 
 // Duration returns a new time.Duration pointer.
-// When env.Parse is called,
+// When Parse is called,
 // env var name will be parsed
 // and the resulting value
-// will be assigned to the location pointed to.
+// will be assigned to the returned location.
 func Duration(name string, value time.Duration) *time.Duration {
 	p := new(time.Duration)
 	*p = value
@@ -57,9 +57,9 @@ func Duration(name string, value time.Duration) *time.Duration {
 }
 
 // String returns a new string pointer.
-// When env.Parse is called,
+// When Parse is called,
 // env var name will be assigned
-// to the location pointed to.
+// to the returned location.
 func String(name string, value string) *string {
 	p := new(string)
 	*p = value
