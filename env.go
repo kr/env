@@ -5,6 +5,7 @@ package env
 
 import (
 	"log"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
@@ -50,6 +51,34 @@ func Duration(name string, value time.Duration) *time.Duration {
 				return false
 			}
 			*p = v
+		}
+		return true
+	})
+	return p
+}
+
+// URL returns a new url.URL pointer.
+// When Parse is called,
+// env var name will be parsed
+// and the resulting value
+// will be assigned to the returned location.
+// URL panics if there is an error parsing
+// the given default value.
+func URL(name string, value string) *url.URL {
+	p := new(url.URL)
+	v, err := url.Parse(value)
+	if err != nil {
+		panic(err)
+	}
+	*p = *v
+	funcs = append(funcs, func() bool {
+		if s := os.Getenv(name); s != "" {
+			v, err := url.Parse(s)
+			if err != nil {
+				log.Println(name, err)
+				return false
+			}
+			*p = *v
 		}
 		return true
 	})
