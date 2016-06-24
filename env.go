@@ -57,6 +57,28 @@ func Duration(name string, value time.Duration) *time.Duration {
 	return p
 }
 
+// Time returns a new time.Time pointer.
+// When Parse is called,
+// env var name will be parsed
+// and the resulting value
+// will be assigned to the returned location.
+func Time(name, format string, value time.Time) *time.Time {
+	p := new(time.Time)
+	*p = value
+	funcs = append(funcs, func() bool {
+		if s := os.Getenv(name); s != "" {
+			v, err := time.Parse(format, s)
+			if err != nil {
+				log.Println(name, err)
+				return false
+			}
+			*p = v
+		}
+		return true
+	})
+	return p
+}
+
 // URL returns a new url.URL pointer.
 // When Parse is called,
 // env var name will be parsed
