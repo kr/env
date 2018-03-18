@@ -1,6 +1,5 @@
-// Package env provides a convenient way to convert environment
-// variables into Go data. It is similar in design to package
-// flag.
+// Package env provides a convenient way
+// to convert environment variables into Go data.
 package env // import "github.com/kr/env"
 
 import (
@@ -11,130 +10,90 @@ import (
 	"time"
 )
 
-var funcs []func() bool
-
-// Int returns a new int pointer.
-// When Parse is called,
-// env var name will be parsed
-// and the resulting value
-// will be assigned to the returned location.
-func Int(name string, value int) *int {
-	p := new(int)
-	*p = value
-	funcs = append(funcs, func() bool {
-		if s := os.Getenv(name); s != "" {
-			v, err := strconv.Atoi(s)
-			if err != nil {
-				log.Println(name, err)
-				return false
-			}
-			*p = v
+// Int returns the value of the named environment variable,
+// interpreted as an int (using strconv.Atoi).
+// If there is an error parsing the value, it prints a
+// diagnostic message to the log and calls os.Exit(1).
+// If name isn't in the environment, it returns value.
+func Int(name string, value int) int {
+	if s := os.Getenv(name); s != "" {
+		var err error
+		value, err = strconv.Atoi(s)
+		if err != nil {
+			log.Println(name, err)
+			os.Exit(1)
 		}
-		return true
-	})
-	return p
+	}
+	return value
 }
 
-// Duration returns a new time.Duration pointer.
-// When Parse is called,
-// env var name will be parsed
-// and the resulting value
-// will be assigned to the returned location.
-func Duration(name string, value time.Duration) *time.Duration {
-	p := new(time.Duration)
-	*p = value
-	funcs = append(funcs, func() bool {
-		if s := os.Getenv(name); s != "" {
-			v, err := time.ParseDuration(s)
-			if err != nil {
-				log.Println(name, err)
-				return false
-			}
-			*p = v
+// Duration returns the value of the named environment variable,
+// interpreted as a time.Duration (using time.ParseDuration).
+// If there is an error parsing the value, it prints a
+// diagnostic message to the log and calls os.Exit(1).
+// If name isn't in the environment, it returns value.
+func Duration(name string, value time.Duration) time.Duration {
+	if s := os.Getenv(name); s != "" {
+		var err error
+		value, err = time.ParseDuration(s)
+		if err != nil {
+			log.Println(name, err)
+			os.Exit(1)
 		}
-		return true
-	})
-	return p
+	}
+	return value
 }
 
-// Time returns a new time.Time pointer.
-// When Parse is called,
-// env var name will be parsed
-// and the resulting value
-// will be assigned to the returned location.
-func Time(name, format string, value time.Time) *time.Time {
-	p := new(time.Time)
-	*p = value
-	funcs = append(funcs, func() bool {
-		if s := os.Getenv(name); s != "" {
-			v, err := time.Parse(format, s)
-			if err != nil {
-				log.Println(name, err)
-				return false
-			}
-			*p = v
+// Time returns the value of the named environment variable,
+// interpreted as a time.Time
+// (using time.Parse with the given format).
+// If there is an error parsing the value, it prints a
+// diagnostic message to the log and calls os.Exit(1).
+// If name isn't in the environment, Time returns the time.Time
+// that results from parsing the given value.
+// Time panics if there is an error parsing the given value.
+func Time(name, format, value string) time.Time {
+	v, err := time.Parse(format, value)
+	if err != nil {
+		panic(err)
+	}
+	if s := os.Getenv(name); s != "" {
+		v, err = time.Parse(format, s)
+		if err != nil {
+			log.Println(name, err)
+			os.Exit(1)
 		}
-		return true
-	})
-	return p
+	}
+	return v
 }
 
-// URL returns a new url.URL pointer.
-// When Parse is called,
-// env var name will be parsed
-// and the resulting value
-// will be assigned to the returned location.
-// URL panics if there is an error parsing
-// the given default value.
+// URL returns the value of the named environment variable,
+// interpreted as a *url.URL (using url.Parse).
+// If there is an error parsing the environment value, it prints a
+// diagnostic message to the log and calls os.Exit(1).
+// If name isn't in the environment, URL returns the *url.URL
+// that results from parsing the given value.
+// URL panics if there is an error parsing the given value.
 func URL(name string, value string) *url.URL {
-	p := new(url.URL)
 	v, err := url.Parse(value)
 	if err != nil {
 		panic(err)
 	}
-	*p = *v
-	funcs = append(funcs, func() bool {
-		if s := os.Getenv(name); s != "" {
-			v, err := url.Parse(s)
-			if err != nil {
-				log.Println(name, err)
-				return false
-			}
-			*p = *v
+	if s := os.Getenv(name); s != "" {
+		v, err = url.Parse(s)
+		if err != nil {
+			log.Println(name, err)
+			os.Exit(1)
 		}
-		return true
-	})
-	return p
+	}
+	return v
 }
 
-// String returns a new string pointer.
-// When Parse is called,
-// env var name will be assigned
-// to the returned location.
-func String(name string, value string) *string {
-	p := new(string)
-	*p = value
-	funcs = append(funcs, func() bool {
-		if s := os.Getenv(name); s != "" {
-			*p = s
-		}
-		return true
-	})
-	return p
-}
-
-// Parse parses known env vars
-// and assigns the values to the variables
-// that were previously registered.
-// If any values cannot be parsed,
-// Parse prints an error message for each one
-// and exits the process with status 1.
-func Parse() {
-	ok := true
-	for _, f := range funcs {
-		ok = f() && ok
+// String returns the value of the named environment variable.
+// If name isn't in the environment or is empty, it returns value.
+func String(name string, value string) string {
+	if s := os.Getenv(name); s != "" {
+		value = s
 	}
-	if !ok {
-		os.Exit(1)
-	}
+	return value
 }
