@@ -1,7 +1,7 @@
 // Package env provides a convenient way to convert environment
 // variables into Go data. It is similar in design to package
 // flag.
-package env
+package env // import "github.com/kr/env"
 
 import (
 	"log"
